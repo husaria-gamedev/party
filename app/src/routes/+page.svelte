@@ -41,7 +41,7 @@
 					<button class="btn btn-primary">Connect</button>
 				</div>
 
-				<span class="mt-5 text-sm text-center">or <a href="/" class="link link-secondary">host your own game</a></span>
+				<span class="mt-5 text-sm text-center">or <a href="/lobby" class="link link-secondary">host your own game</a></span>
 			</div>
 		</div>
     </div>
