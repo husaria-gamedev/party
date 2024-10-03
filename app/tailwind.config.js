@@ -8,6 +8,9 @@ export default {
       },
     }
   },
- plugins: [require('daisyui')],
+  daisyui: {
+    themes: ["business"],
+  },
+  plugins: [require('daisyui')],
 }
 
