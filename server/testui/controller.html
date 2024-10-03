@@ -1,0 +1,111 @@
+<html></html>
+
+    <body>
+
+        <form id="form">
+            <input name="roomId" />
+            <input type="submit" />
+        </form>
+        <div id="roomId"></div>
+
+        <script type="module">
+            const userId = crypto.randomUUID()
+
+            const form = document.getElementById("form")
+            form.onsubmit = async (e) => {
+                e.preventDefault()
+                const formData = new FormData(e.target);
+                const formProps = Object.fromEntries(formData);
+                const roomId = formProps.roomId
+                const room = await getRoom(roomId)
+
+                handleSignal(userId, room.hostUserId)
+            }
+            // const room = await createRoom(userId)
+            // handleSignal(userId)
+           
+            const localConnection = new RTCPeerConnection({
+                iceServers: [
+                    { urls: "stun:stun.l.google.com:19302" },
+                ]
+            });
+
+
+            // let offer;
+            // console.log(localConnection)
+            // localConnection.addEventListener("icecandidate",async (ev) => {
+            //     if(ev.candidate == null) {
+            //         console.log("done")
+            //     }
+            //     console.log("candidate", ev.candidate, offer)
+                
+            // })
+
+            // offer = await localConnection.createOffer({
+            //     iceRestart: true
+            // })
+            // console.log(offer)
+            // await localConnection.setLocalDescription(offer)
+            // console.log("set local description", localConnection.iceGatheringState)
+
+            async function getRoom(roomId) {
+                const res = await fetch(`/api/room/${roomId}`)
+                if(!res.ok) {
+                    throw Error("invalid response: " + await res.text())
+                }
+                const room = await res.json()
+                return room
+            }
+
+            function handleSignal(userId, hostId) {
+                const conn = new WebSocket(`/api/ws?userId=${userId}`)
+                const localConnection = new RTCPeerConnection({
+                    iceServers: [
+                        { urls: "stun:stun.l.google.com:19302" },
+                    ]
+                });
+                const dataChannel = localConnection.createDataChannel('', {
+                    id: 0,
+                    negotiated: true
+                });
+                dataChannel.onopen = () => {
+                    console.log("connection successful")
+                }
+                dataChannel.onmessage = (m) => {
+                    console.log("got message", m.data)
+                    dataChannel.send("pong: " + m.data)
+                }
+
+                conn.onopen = async() => {
+                    const offer = await localConnection.createOffer({
+                        iceRestart: true
+                    })
+                    await localConnection.setLocalDescription(offer)
+                    conn.send(JSON.stringify({
+                        recipientId: hostId,
+                        type: "ice_offer",
+                        data: offer
+                    }))
+
+                    localConnection.onicecandidate = (c) => {
+                        if(c.candidate == null) return;
+                        conn.send(JSON.stringify({
+                            recipientId: hostId,
+                            type: "ice_candidate",
+                            data: c.candidate.toJSON()
+                        }))
+                    }
+                }
+
+                conn.onmessage = async (msg) => {
+                    const message = JSON.parse(msg.data)
+                    if(message.type == "ice_answer") {
+                        await localConnection.setRemoteDescription(message.data)
+                    } else if(message.type == "ice_candidate") {
+                        await localConnection.addIceCandidate(message.data)
+                    }
+                }
+            }
+        </script>
+    </body>
+</html>

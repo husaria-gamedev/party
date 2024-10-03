@@ -1,14 +1,17 @@
 package server
 
-import "context"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 type Room struct {
-	Id             string `json:"id"`
-	ConnectionInfo string `json:"connectionInfo"`
-	AdminPassword  string `json:"-"`
+	Code       string    `json:"code"`
+	HostUserId uuid.UUID `json:"hostUserId"`
 }
 
 type RoomService interface {
-	CreateRoom(context.Context, Room) error
-	GetRoom(context.Context, string) (Room, error)
+	CreateRoom(ctx context.Context, hostUserId uuid.UUID) (Room, error)
+	GetRoom(ctx context.Context, code string) (Room, error)
 }

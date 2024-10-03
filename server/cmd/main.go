@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/husaria-dev/party/server/connection"
+	"github.com/husaria-dev/party/server"
+	"github.com/husaria-dev/party/server/handler"
 	"github.com/husaria-dev/party/server/inmem"
 )
 
@@ -16,9 +17,21 @@ var (
 
 func main() {
 	rs := inmem.NewRoomService()
-	connHandler := connection.NewHandler(rs, roomIdLength)
 
-	if err := http.ListenAndServe(":"+port, connHandler); err != nil {
+	connPool := server.NewConnectionPool()
+	connHandler := handler.New(rs, connPool)
+
+	mux := http.NewServeMux()
+
+	mux.Handle("/api/", http.StripPrefix("/api", connHandler))
+	mux.Handle("/", http.FileServer(http.Dir("./testui")))
+
+	addr := ":8080"
+	if port != "" {
+		addr = ":" + port
+	}
+
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatal(err)
 	}
 }
