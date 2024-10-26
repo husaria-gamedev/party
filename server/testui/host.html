@@ -13,32 +13,6 @@
             roomCodeDiv.innerText = room.code
             handleSignal(userId)
            
-            // const localConnection = new RTCPeerConnection({
-            //     iceServers: [
-            //         { urls: "stun:stun.l.google.com:19302" },
-            //     ]
-            // });
-
-            // console.log('creating data channel');
-            // localConnection.createDataChannel('');
-
-            // let offer;
-            // console.log(localConnection)
-            // localConnection.addEventListener("icecandidate",async (ev) => {
-            //     if(ev.candidate == null) {
-            //         console.log("done")
-            //     }
-            //     console.log("candidate", ev.candidate, offer)
-                
-            // })
-
-            // offer = await localConnection.createOffer({
-            //     iceRestart: true
-            // })
-            // console.log(offer)
-            // await localConnection.setLocalDescription(offer)
-            // console.log("set local description", localConnection.iceGatheringState)
-
             async function createRoom(userId) {
                 const res = await fetch(`/api/room?userId=${userId}`, {
                     method: "POST",
@@ -57,7 +31,13 @@
                 conn.onmessage = async (msg) => {
                     const message = JSON.parse(msg.data)
                     if(message.type == "ice_offer") {
-                        const newPlayerConn = new RTCPeerConnection()
+                        const newPlayerConn = new RTCPeerConnection({
+                            iceServers: [
+                                {
+                                    urls: "stun:stun.relay.metered.ca:80",
+                                }
+                            ],
+                        });
                         const dataChannel = newPlayerConn.createDataChannel("", {
                             id: 0,
                             negotiated: true

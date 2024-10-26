@@ -1,7 +1,9 @@
-<html></html>
-
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
     <body>
-
+        <h1>Controller</h1>
         <form id="form">
             <input name="roomId" />
             <input type="submit" />
@@ -21,32 +23,6 @@
 
                 handleSignal(userId, room.hostUserId)
             }
-            // const room = await createRoom(userId)
-            // handleSignal(userId)
-           
-            const localConnection = new RTCPeerConnection({
-                iceServers: [
-                    { urls: "stun:stun.l.google.com:19302" },
-                ]
-            });
-
-
-            // let offer;
-            // console.log(localConnection)
-            // localConnection.addEventListener("icecandidate",async (ev) => {
-            //     if(ev.candidate == null) {
-            //         console.log("done")
-            //     }
-            //     console.log("candidate", ev.candidate, offer)
-                
-            // })
-
-            // offer = await localConnection.createOffer({
-            //     iceRestart: true
-            // })
-            // console.log(offer)
-            // await localConnection.setLocalDescription(offer)
-            // console.log("set local description", localConnection.iceGatheringState)
 
             async function getRoom(roomId) {
                 const res = await fetch(`/api/room/${roomId}`)
@@ -61,8 +37,10 @@
                 const conn = new WebSocket(`/api/ws?userId=${userId}`)
                 const localConnection = new RTCPeerConnection({
                     iceServers: [
-                        { urls: "stun:stun.l.google.com:19302" },
-                    ]
+                        {
+                            urls: "stun:stun.relay.metered.ca:80",
+                        }
+                    ],
                 });
                 const dataChannel = localConnection.createDataChannel('', {
                     id: 0,
