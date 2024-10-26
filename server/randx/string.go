@@ -2,7 +2,7 @@ package randx
 
 import "math/rand"
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const letterBytes = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func String(length int) string {
 	b := make([]byte, length)
